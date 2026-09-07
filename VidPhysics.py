@@ -7,7 +7,7 @@ from PIL import Image
 from nicegui import ui,events,app
 import os
 
-__version__="0.0.3"
+__version__="0.0.4"
 
 def mouse_handler(e: events.MouseEventArguments):
 
