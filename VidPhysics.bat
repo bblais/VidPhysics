@@ -1,2 +1,2 @@
-uv run "VidPhysics.py"
-
+call .venv\Scripts\activate.bat
+python VidPhysics.py
