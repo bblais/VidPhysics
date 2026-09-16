@@ -189,7 +189,7 @@ class Demo:
                     if i<Lv:
                         S.append(f"{t[i]:.5g} , {x[i]*meters_per_pixel:.5g} , {y[i]*meters_per_pixel:.5g},     ,  {tv[i]*dt:.5g} , {vx[i]*meters_per_pixel/dt:.5g} , {vy[i]*meters_per_pixel/dt:.5g}")
                     else:
-                        S.append(f"{t[i]:.5g} , {x[i]*meters_per_pixel:.5g} , {y[i]*meters_per_pixel:.5g},     ,   ,  , ")
+                        S.append(f"{t[i]:.5g} , {x[i]*meters_per_pixel:.5g} , {y[i]*meters_per_pixel:.5g}")
 
             else:
                 S=[]
@@ -198,7 +198,7 @@ class Demo:
                     if i<Lv:
                         S.append(f"{t[i]:.0f} , {x[i]:.0f} , {y[i]:.0f},     ,  {tv[i]:.1g} , {vx[i]:.5g} , {vy[i]:.5g}")
                     else:
-                        S.append(f"{t[i]:.0f} , {x[i]:.0f} , {y[i]:.0f},  ")
+                        S.append(f"{t[i]:.0f} , {x[i]:.0f} , {y[i]:.0f}  ")
 
             S="\n".join(S)
 
