@@ -7,7 +7,7 @@ from PIL import Image
 from nicegui import ui,events,app
 import os
 
-__version__="0.0.4"
+__version__="0.0.5"
 
 def mouse_handler(e: events.MouseEventArguments):
 
@@ -19,15 +19,15 @@ def mouse_handler(e: events.MouseEventArguments):
 
     else:
         color = 'green'
-        demo.img_display.content += f'<rect x="{e.image_x-3}" y="{e.image_y-3}" width="6" height="6" fill="none" stroke="{color}" stroke-width="2" />'
+        demo.img_display.content += f'<rect x="{e.image_x}" y="{e.image_y}" width="6" height="6" fill="none" stroke="{color}" stroke-width="2" />'
         demo._calibration_locations.append( [e.image_x,e.image_y] )
 
         if len(demo._calibration_locations)==2:  # done calibrating
             demo._calibration_mode=False
+            print("calibration_locations:",demo._calibration_locations)
             demo.set_meters()
 
 def keyboard_handler(e: events.KeyEventArguments):
-    print("in key")
     if e.action.keydown:
         if e.key.arrow_left:
             demo.prev_frame()
@@ -114,7 +114,7 @@ class Demo:
         self.can_calibrate=True
         self.can_rotate=True
         self.can_export=False
-
+        self.n=len(self.frames)
 
         self.update()
     
@@ -187,16 +187,16 @@ class Demo:
 
                 for i,loc in enumerate(self.locations):
                     if i<Lv:
-                        S.append(f"{t[i]:.5g} , {x[i]*meters_per_pixel:.5g} , {y[i]*meters_per_pixel:.5g},     ,  {tv[i]*dt:.5g} , {vx[i]*meters_per_pixel/dt:.5g} , {vy[i]*meters_per_pixel/dt:.5g}")
+                        S.append(f"{t[i]:.10g} , {x[i]*meters_per_pixel:.10g} , {y[i]*meters_per_pixel:.10g},     ,  {tv[i]:.10g} , {vx[i]*meters_per_pixel:.10g} , {vy[i]*meters_per_pixel:.10g}")
                     else:
-                        S.append(f"{t[i]:.5g} , {x[i]*meters_per_pixel:.5g} , {y[i]*meters_per_pixel:.5g}")
+                        S.append(f"{t[i]:.10g} , {x[i]*meters_per_pixel:.10g} , {y[i]*meters_per_pixel:.10g}")
 
             else:
                 S=[]
                 S.append("t [frames], x [pix], y [pix],   ,tv [frames],vx [pix/frame], vy[pix/frame]")
                 for i,loc in enumerate(self.locations):
                     if i<Lv:
-                        S.append(f"{t[i]:.0f} , {x[i]:.0f} , {y[i]:.0f},     ,  {tv[i]:.1g} , {vx[i]:.5g} , {vy[i]:.5g}")
+                        S.append(f"{t[i]:.0f} , {x[i]:.0f} , {y[i]:.0f},     ,  {tv[i]:.10g} , {vx[i]:.10g} , {vy[i]:.10g}")
                     else:
                         S.append(f"{t[i]:.0f} , {x[i]:.0f} , {y[i]:.0f}  ")
 
