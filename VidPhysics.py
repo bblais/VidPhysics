@@ -7,19 +7,21 @@ from PIL import Image
 from nicegui import ui,events,app
 import os
 
-__version__="0.0.5"
+__version__="0.0.6"
 
 def mouse_handler(e: events.MouseEventArguments):
 
     if not demo._calibration_mode:
         color = 'red'
-        demo.img_display.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="4" fill="none" stroke="{color}" stroke-width="2" />'
+        if demo.show_clicks:
+            demo.img_display.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="4" fill="none" stroke="{color}" stroke-width="2" />'
         demo.locations.append( [demo.frame_number,e.image_x,e.image_y] )
         demo.next_frame()
 
     else:
         color = 'green'
-        demo.img_display.content += f'<rect x="{e.image_x}" y="{e.image_y}" width="6" height="6" fill="none" stroke="{color}" stroke-width="2" />'
+        if demo.show_clicks:
+            demo.img_display.content += f'<rect x="{e.image_x}" y="{e.image_y}" width="6" height="6" fill="none" stroke="{color}" stroke-width="2" />'
         demo._calibration_locations.append( [e.image_x,e.image_y] )
 
         if len(demo._calibration_locations)==2:  # done calibrating
@@ -46,10 +48,12 @@ class Demo:
         self.can_calibrate=False
         self.can_export=False
         self.can_rotate=False
+        self.can_clear_data=False
         self.meters_per_pixel=None
         self._calibration_mode=False
         self._calibration_locations=[]
         self._calibration_meters=1
+        self.show_clicks=True
         self.frames=[]
         self.frame_number = 1
         self.locations=[]
@@ -81,12 +85,15 @@ class Demo:
             temp_file.write(await e.file.read())        
 
         print(temp_path)
+        self.video_path=f"{temp_path}"
         
         ui.notify(f'Uploaded {e.file.name}')
+        self.reset_image()
+
+    def reset_image(self):
 
         self.frame_number = 1
         self.locations=[]
-        self.video_path=f"{temp_path}"
         self.read_frames()
 
         self.current_frame=self.frames[self.frame_number]
@@ -144,6 +151,7 @@ class Demo:
             if self.locations:
                 self.can_rotate=False
                 self.can_export=True
+                self.can_clear_data=True
 
     @property
     def data_text(self):
@@ -207,7 +215,26 @@ class Demo:
 
         return S
 
+    async def confirm_clear(self):
+        with ui.dialog() as dialog, ui.card():
+            ui.label('Are you sure you want to clear the data?')
+            with ui.row():
+                ui.button('Yes', on_click=lambda: dialog.submit(True))
+                ui.button('No', color='secondary', on_click=lambda: dialog.submit(False))
 
+        result = await dialog
+        
+        if result:
+            ui.notify('Data cleared!')
+            # Put your data clearing logic here
+
+            self.locations=[]
+            self.can_clear_data=False
+            self.reset_image()
+            self.update()
+
+        else:
+            ui.notify('Action cancelled.')
 
 
     def calibrate(self):
@@ -302,6 +329,8 @@ with ui.row():
          validation={'Needs to be greater than zero': lambda value: value is not None and value > 0},
          on_change=demo.update,
          ).bind_value(demo, 'fps')
+    ui.button("Clear Data",on_click=lambda e: demo.confirm_clear()).bind_enabled_from(demo, 'can_clear_data')
+    ui.checkbox("Show Clicks", value=True, on_change=lambda e: demo.update()).bind_value(demo, 'show_clicks')
   
 demo.container = ui.row() 
 with demo.container:  
