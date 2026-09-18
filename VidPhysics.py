@@ -1,13 +1,32 @@
 # /// script
-# dependencies = ["nicegui","Pillow","numpy","opencv-python"]
+# dependencies = ["nicegui","Pillow","numpy","opencv-python","pywebview"]
 # ///
 import numpy as np
 import cv2
 from PIL import Image
 from nicegui import ui,events,app
+import webview
 import os
 
 __version__="0.0.6"
+
+async def save_csv():
+    # Prompt user for save path using native OS dialog
+    file_path = await app.native.main_window.create_file_dialog(
+        dialog_type=webview.FileDialog.SAVE,
+        save_filename='data.csv',
+        file_types=('CSV Files (*.csv)', 'All files (*.*)')
+    )
+    
+    if file_path:
+        # Resolve target path (pywebview returns a tuple/list on some platforms)
+        target = file_path[0] if isinstance(file_path, (list, tuple)) else file_path
+        
+        with open(target, 'w', encoding='utf-8') as f:
+            f.write(demo.data_text)
+            
+        ui.notify(f'Exported to {target}', type='positive')
+
 
 def mouse_handler(e: events.MouseEventArguments):
 
@@ -323,8 +342,10 @@ with ui.row():
 
     ui.button("Rotate Video",on_click=lambda e: demo.rotate()).bind_enabled_from(demo, 'can_rotate')
     ui.button("Calibrate",on_click=lambda e: demo.calibrate()).bind_enabled_from(demo, 'can_calibrate')
-    ui.button("Export csv",
+    ui.button("Export CSV",
                 on_click=lambda e: ui.download(bytes(demo.data_text, 'utf-8'),'data.csv')).bind_enabled_from(demo, 'can_export')
+                
+    #ui.button("Export CSV", on_click=save_csv).bind_enabled_from(demo, 'can_export')
     ui.number(label='Frames Per Second', value=30,
          validation={'Needs to be greater than zero': lambda value: value is not None and value > 0},
          on_change=demo.update,
@@ -335,5 +356,10 @@ with ui.row():
 demo.container = ui.row() 
 with demo.container:  
    empty = ui.label("No Video Chosen.")
+
+# if __name__ == '__main__':
+#     # native=True uses pywebview to open as a desktop window instead of browser
+#     ui.run(reload=False, native=True)
+
 
 ui.run(host="127.0.0.1")

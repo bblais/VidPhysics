@@ -2,3 +2,5 @@ nicegui
 Pillow
 numpy
 opencv-python
+pywebview
+pyinstaller
